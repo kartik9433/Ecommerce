@@ -1,0 +1,99 @@
+#carouselExampleIndicators {
+    max-height: 500px; 
+    overflow: hidden;
+    border-radius: 12px; 
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+#carouselExampleIndicators .carousel-item img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.carousel-indicators [data-bs-target] {
+    background-color: white; 
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.carousel-indicators .active {
+    background-color: #ff6600; 
+    opacity: 1;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-size: 100%, 100%;
+    filter: invert(1) grayscale(100); 
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+    #carouselExampleIndicators {
+        max-height: 300px;
+    }
+    #carouselExampleIndicators .carousel-item img {
+        height: 300px;
+    }
+}
+
+footer {
+    background-color: black;
+    border: 2px solid black;
+}
+footer .row {
+    display: flex;
+    justify-content: space-evenly;
+}
+footer a{
+    color: aliceblue;
+    text-decoration: none;
+    font-size: small;
+}
+footer h7{
+     color:white;
+     font-style:inherit ;
+}
+footer ul{
+    list-style-type: none;
+}
+.navbar{
+               
+    & a {
+           font-size: x-large;
+           font-weight: 700;
+           color:black;
+    }
+   
+}
+.col-lg-4 {
+      .card{
+        background-color: lightcyan;
+        .card-title{
+            font-size: x-large;
+        }
+        .price{
+            font-size: large;
+        }
+   }
+
+}
+ 
+body{
+    background-color: lightblue;
+}
+
