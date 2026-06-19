@@ -3,199 +3,382 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecommerce App</title>
+    <title>Mart — Online Store</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink:       #1a1a2e;
+            --muted:     #5c5c72;
+            --accent:    #e63946;
+            --accent-dk: #c1121f;
+            --surface:   #f8f7f4;
+            --card-bg:   #ffffff;
+            --border:    #e8e6e1;
+            --badge-bg:  #e63946;
+        }
+
+        /* ── Base ── */
+        body { background: var(--surface); font-family: 'Inter', sans-serif; color: var(--ink); }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; }
+
+        /* ── Navbar ── */
+        .navbar { background: var(--card-bg) !important; border-bottom: 1px solid var(--border); padding: 0.75rem 0; }
+        .navbar-brand { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink) !important; letter-spacing: -0.5px; }
+        .nav-link { font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500; color: var(--muted) !important; letter-spacing: 0.03em; text-transform: uppercase; padding: 0.5rem 1rem !important; transition: color 0.2s; }
+        .nav-link:hover { color: var(--accent) !important; }
+        .cart-icon-wrap { position: relative; display: inline-block; }
+        .cart-badge { position: absolute; top: -8px; right: -10px; background: var(--badge-bg); color: #fff; font-size: 0.65rem; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; }
+
+        /* ── Carousel ── */
+        #heroCarousel { max-height: 520px; overflow: hidden; }
+        #heroCarousel .carousel-item img { width: 100%; height: 520px; object-fit: cover; object-position: center; }
+        .carousel-caption-custom { position: absolute; bottom: 60px; left: 60px; z-index: 10; text-align: left; }
+        .carousel-caption-custom h2 { font-size: 2.8rem; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.5); margin-bottom: 0.5rem; }
+        .carousel-caption-custom p { color: rgba(255,255,255,0.85); font-size: 1rem; }
+        .carousel-indicators [data-bs-target] { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); border: none; }
+        .carousel-indicators .active { background: var(--accent); }
+
+        /* ── Section Titles ── */
+        .section-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+        .section-header h2 { font-size: 1.8rem; margin: 0; }
+        .section-header .line { flex: 1; height: 1px; background: var(--border); }
+        .section-header .tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; color: var(--accent); background: #fdecea; padding: 3px 10px; border-radius: 20px; }
+
+        /* ── Product Cards ── */
+        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.25s, box-shadow 0.25s; height: 100%; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+        .product-card img { width: 100%; height: 220px; object-fit: cover; }
+        .product-card .card-body { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+        .product-card .card-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 0.4rem; }
+        .product-card .card-text { font-size: 0.85rem; color: var(--muted); flex: 1; }
+        .product-card .price { font-size: 1.2rem; font-weight: 700; color: var(--ink); margin: 0.6rem 0; }
+        .btn-add { background: var(--ink); color: #fff; border: none; border-radius: 8px; padding: 0.55rem 1.2rem; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.03em; transition: background 0.2s, transform 0.15s; width: 100%; }
+        .btn-add:hover { background: var(--accent); transform: scale(1.02); color: #fff; }
+        .btn-add:active { transform: scale(0.98); }
+        .btn-add.added { background: #2d9e6b; }
+
+        /* ── Skeleton Loader ── */
+        .skeleton-card { border-radius: 12px; overflow: hidden; background: var(--card-bg); border: 1px solid var(--border); }
+        .skeleton { background: linear-gradient(90deg, #ececec 25%, #f8f8f8 50%, #ececec 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+        .skeleton-img { height: 220px; width: 100%; border-radius: 0; }
+        .skeleton-line { height: 14px; margin: 8px 16px; }
+        .skeleton-line.short { width: 60%; }
+        .skeleton-btn { height: 38px; margin: 12px 16px; border-radius: 8px; }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        /* ── Toast ── */
+        #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+        .toast-msg { background: var(--ink); color: #fff; padding: 0.7rem 1.2rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideUp 0.3s ease, fadeOut 0.4s 2.2s forwards; white-space: nowrap; }
+        .toast-msg i { color: #2d9e6b; margin-right: 8px; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateY(-8px); } }
+
+        /* ── Footer ── */
+        footer { background: var(--ink) !important; }
+        footer h5 { font-family: 'Inter', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; font-weight: 700; color: rgba(255,255,255,0.45); margin-bottom: 1rem; }
+        footer a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.875rem; transition: color 0.2s; }
+        footer a:hover { color: #fff; }
+        footer p { font-size: 0.875rem; color: rgba(255,255,255,0.6); }
+        footer hr { border-color: rgba(255,255,255,0.1); }
+        .social-link { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); display: inline-flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.7) !important; transition: border-color 0.2s, color 0.2s; }
+        .social-link:hover { border-color: var(--accent); color: var(--accent) !important; }
+
+        /* ── Empty State ── */
+        .empty-state { text-align: center; padding: 2.5rem; color: var(--muted); font-size: 0.9rem; width: 100%; }
+        .empty-state i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.4; display: block; }
+
+        @media (max-width: 768px) {
+            #heroCarousel { max-height: 260px; }
+            #heroCarousel .carousel-item img { height: 260px; }
+            .carousel-caption-custom { bottom: 20px; left: 20px; }
+            .carousel-caption-custom h2 { font-size: 1.6rem; }
+        }
+    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg shadow-lg bg-light">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/">Welcome to Mart</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Clothing</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/">Accessories</a></li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="cart.html">
-                            <i class="fa-solid fa-cart-shopping"></i>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">Mart</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="#clothing">Clothing</a></li>
+                <li class="nav-item"><a class="nav-link" href="#fitness">Fitness</a></li>
+                <li class="nav-item"><a class="nav-link" href="#home-kitchen">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#books">Books</a></li>
+                <li class="nav-item ms-2">
+                    <a class="nav-link" href="cart.html">
+                        <span class="cart-icon-wrap">
+                            <i class="fa-solid fa-cart-shopping fa-lg"></i>
                             <span class="cart-badge" id="cart-count">0</span>
-                        </a>
-                    </li>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Carousel -->
+<div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="img/women.jpg" class="d-block w-100" alt="Women's Fashion">
+            <div class="carousel-caption-custom">
+                <h2>New Season,<br>New You</h2>
+                <p>Explore our latest collection</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="img/shoes.jpg" class="d-block w-100" alt="Footwear">
+            <div class="carousel-caption-custom">
+                <h2>Step Into<br>Style</h2>
+                <p>Premium footwear for every stride</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="img/clothes.jpg" class="d-block w-100" alt="Clothing">
+            <div class="carousel-caption-custom">
+                <h2>Everyday<br>Essentials</h2>
+                <p>Quality basics that never go out of style</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- Products -->
+<div class="container mt-5 pb-5">
+
+    <section id="clothing" class="mb-5">
+        <div class="section-header">
+            <h2>Clothing</h2>
+            <span class="tag">Collection</span>
+            <div class="line"></div>
+        </div>
+        <div id="clothing-products" class="row g-4"></div>
+    </section>
+
+    <section id="fitness" class="mb-5">
+        <div class="section-header">
+            <h2>Fitness</h2>
+            <span class="tag">Performance</span>
+            <div class="line"></div>
+        </div>
+        <div id="fitness-products" class="row g-4"></div>
+    </section>
+
+    <section id="home-kitchen" class="mb-5">
+        <div class="section-header">
+            <h2>Home &amp; Kitchen</h2>
+            <span class="tag">Living</span>
+            <div class="line"></div>
+        </div>
+        <div id="home-products" class="row g-4"></div>
+    </section>
+
+    <section id="books" class="mb-5">
+        <div class="section-header">
+            <h2>Books</h2>
+            <span class="tag">Reading</span>
+            <div class="line"></div>
+        </div>
+        <div id="books-products" class="row g-4"></div>
+    </section>
+
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Footer -->
+<footer class="pt-5 pb-3 mt-2">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 mb-2">
+                <h5 class="mb-3">MART</h5>
+                <p>Shop the latest trends in clothing, fitness, home &amp; kitchen, and books. Quality products delivered to your door.</p>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f fa-sm"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter fa-sm"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram fa-sm"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in fa-sm"></i></a>
+                </div>
+            </div>
+            <div class="col-md-3 mb-2">
+                <h5>QUICK LINKS</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/">About Us</a></li>
+                    <li><a href="/">Contact</a></li>
+                    <li><a href="/">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-2">
+                <h5>CATEGORIES</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="#clothing">Clothing</a></li>
+                    <li><a href="#fitness">Fitness</a></li>
+                    <li><a href="#home-kitchen">Home &amp; Kitchen</a></li>
+                    <li><a href="#books">Books</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-2">
+                <h5>BRAND PARTNERS</h5>
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li><a href="/">H&amp;M</a></li>
+                    <li><a href="/">Zara</a></li>
+                    <li><a href="/">Levi's</a></li>
+                    <li><a href="/">Adidas</a></li>
                 </ul>
             </div>
         </div>
-    </nav>
-
-    <!-- Carousel -->
-    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"></button>
+        <hr>
+        <div class="text-center">
+            <p class="mb-0" style="font-size:0.8rem; color:rgba(255,255,255,0.35);">&copy; 2025 Mart. All rights reserved.</p>
         </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active"><img src="img/women.jpg" class="d-block w-100"></div>
-            <div class="carousel-item"><img src="img/shoes.jpg" class="d-block w-100"></div>
-            <div class="carousel-item"><img src="img/clothes.jpg" class="d-block w-100"></div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
     </div>
-
-    <!-- Products -->
-    <div class="container mt-5">
-        <h2 class="section-title mb-4">Clothing</h2>
-        <div id="clothing-products" class="row"></div>
-
-        <h2 class="section-title mt-5 mb-4">Fitness</h2>
-        <div id="Fitness-products" class="row"></div>
-
-        <h2 class="section-title mt-5 mb-4">Home & Kitchen</h2>
-        <div id="home-products" class="row"></div>
-
-        <h2 class="section-title mt-5 mb-4">Books</h2>
-        <div id="books-products" class="row"></div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-light pt-5 pb-3 mt-5">
-  <div class="container">
-    <div class="row">
-
-      <!-- About / Brand -->
-      <div class="col-md-3 mb-4">
-        <h5 class="mb-3">ONLINE STORE</h5>
-        <p>Shop the latest trends in clothing, fitness, home & kitchen, and books. Quality products delivered to your door.</p>
-        <div class="d-flex gap-3 mt-2">
-          <a href="#" class="text-light fs-5"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fab fa-twitter"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="text-light fs-5"><i class="fab fa-linkedin-in"></i></a>
-        </div>
-      </div>
-
-      <!-- Quick Links -->
-      <div class="col-md-3 mb-4">
-        <h5 class="mb-3">QUICK LINKS</h5>
-        <ul class="list-unstyled">
-          <li><a href="/" class="text-light text-decoration-none">Home</a></li>
-          <li><a href="/" class="text-light text-decoration-none">About Us</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Contact</a></li>
-          <li><a href="/" class="text-light text-decoration-none">FAQ</a></li>
-        </ul>
-      </div>
-
-      <!-- Shop Categories -->
-      <div class="col-md-3 mb-4">
-        <h5 class="mb-3">SHOP CATEGORIES</h5>
-        <ul class="list-unstyled">
-          <li><a href="/" class="text-light text-decoration-none">Clothing</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Fitness</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Home & Kitchen</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Books</a></li>
-        </ul>
-      </div>
-
-      <!-- Brand Partners -->
-      <div class="col-md-3 mb-4">
-        <h5 class="mb-3">BRAND PARTNERS</h5>
-        <ul class="list-unstyled">
-          <li><a href="/" class="text-light text-decoration-none">H&M</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Zara</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Levi's</a></li>
-          <li><a href="/" class="text-light text-decoration-none">Adidas</a></li>
-        </ul>
-      </div>
-
-    </div>
-
-    <hr class="bg-light">
-    <div class="text-center">
-      <p class="mb-0">&copy; 2025 Mart. All rights reserved.</p>
-    </div>
-  </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        async function loadProducts() {
-            try {
-                const response = await fetch("http://Ecommerce.eu-north-1.elasticbeanstalk.com/products/getProducts");
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                const products = await response.json();
 
-                const clothingList = document.getElementById("clothing-products");
-                const fitnessList = document.getElementById("Fitness-products");
-                const homeList = document.getElementById("home-products");
-                const booksList = document.getElementById("books-products");
+    function renderSkeletons(containerId, count = 3) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = Array(count).fill(`
+            <div class="col-lg-4 col-md-6">
+                <div class="skeleton-card">
+                    <div class="skeleton skeleton-img"></div>
+                    <div class="skeleton skeleton-line mt-3"></div>
+                    <div class="skeleton skeleton-line short"></div>
+                    <div class="skeleton skeleton-btn"></div>
+                </div>
+            </div>
+        `).join('');
+    }
 
-                // Clear previous content
-                clothingList.innerHTML = "";
-                fitnessList.innerHTML = "";
-                homeList.innerHTML = "";
-                booksList.innerHTML = "";
 
-                products.forEach((product) => {
-                    const productCard = `
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100">
-                                <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}">
-                                <div class="card-body d-flex flex-column">
-                                    <h5 class="card-title">${product.name}</h5>
-                                    <p class="card-text">${product.description}</p>
-                                    <p class="price"><strong>₹${product.price}</strong></p>
-                                    <button class="btn btn-primary mt-auto"
-                                        onclick="addToCart(${product.id},'${product.name}',${product.price},'${product.imageUrl}')">
-                                        Add to Cart
-                                    </button>
-                                </div>
-                            </div>
+    async function loadProducts() {
+        ['clothing-products','fitness-products','home-products','books-products']
+            .forEach(id => renderSkeletons(id, 3));
+
+        try {
+            const response = await fetch(`http://localhost:9090/products/getProducts`);
+            if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+            const products = await response.json();
+
+            const containers = {
+                "Clothing":       document.getElementById("clothing-products"),
+                "Fitness":        document.getElementById("fitness-products"),
+                "Home & Kitchen": document.getElementById("home-products"),
+                "Books":          document.getElementById("books-products"),
+            };
+
+            Object.values(containers).forEach(el => el.innerHTML = "");
+
+            products.forEach(product => {
+                const target = containers[product.category];
+                if (!target) return;
+                const card = document.createElement('div');
+                card.className = "col-lg-4 col-md-6";
+                card.innerHTML = `
+                    <div class="product-card">
+                        <img src="${escHtml(product.imageUrl)}" alt="${escHtml(product.name)}" loading="lazy">
+                        <div class="card-body">
+                            <h5 class="card-title">${escHtml(product.name)}</h5>
+                            <p class="card-text">${escHtml(product.description)}</p>
+                            <p class="price">₹${product.price.toLocaleString('en-IN')}</p>
+                            <button class="btn-add" data-id="${product.id}" data-name="${escHtml(product.name)}"
+                                data-price="${product.price}" data-img="${escHtml(product.imageUrl)}">
+                                <i class="fa-solid fa-cart-plus me-1"></i> Add to Cart
+                            </button>
                         </div>
-                    `;
+                    </div>`;
+                target.appendChild(card);
+            });
 
-                    if (product.category === "Clothing") clothingList.innerHTML += productCard;
-                    else if (product.category === "Fitness") fitnessList.innerHTML += productCard;
-                    else if (product.category === "Home & Kitchen") homeList.innerHTML += productCard;
-                    else if (product.category === "Books") booksList.innerHTML += productCard;
-                });
 
-                updateCartCount();
+            Object.entries(containers).forEach(([cat, el]) => {
+                if (el.children.length === 0) {
+                    el.innerHTML = `<div class="empty-state"><i class="fa-regular fa-folder-open"></i>No ${cat} products available right now.</div>`;
+                }
+            });
 
-            } catch (error) {
-                console.error("Error loading products:", error);
-            }
-        }
-
-        function addToCart(id, name, price, imageUrl) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const existingItem = cart.find(item => item.id === id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({id, name, price, imageUrl, quantity: 1});
-            }
-            localStorage.setItem("cart", JSON.stringify(cart));
             updateCartCount();
-            alert("Product added to cart!");
-        }
 
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById("cart-count").textContent = totalCount;
+        } catch (err) {
+            console.error("Failed to load products:", err);
+            ['clothing-products','fitness-products','home-products','books-products'].forEach(id => {
+                document.getElementById(id).innerHTML =
+                    `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>
+                     Couldn't load products. Is the backend running?<br>
+                     <small style="opacity:.6">${err.message}</small></div>`;
+            });
         }
+    }
 
-        window.onload = loadProducts;
-    </script>
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.btn-add');
+        if (!btn) return;
+        const { id, name, price, img } = btn.dataset;
+        addToCart(Number(id), name, Number(price), img);
+        btn.classList.add('added');
+        btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Added';
+        setTimeout(() => {
+            btn.classList.remove('added');
+            btn.innerHTML = '<i class="fa-solid fa-cart-plus me-1"></i> Add to Cart';
+        }, 1800);
+    });
+
+    function addToCart(id, name, price, imageUrl) {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const existing = cart.find(item => item.id === id);
+        existing ? existing.quantity++ : cart.push({ id, name, price, imageUrl, quantity: 1 });
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
+        showToast(`${name} added to cart`);
+    }
+
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const total = cart.reduce((s, i) => s + i.quantity, 0);
+        document.getElementById("cart-count").textContent = total;
+    }
+
+    // ── Toast ────────────────────────────────────────────────
+    function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        el.className = 'toast-msg';
+        el.innerHTML = `<i class="fa-solid fa-check-circle"></i>${msg}`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 2700);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    window.onload = loadProducts;
+</script>
 </body>
 </html>
