@@ -1,39 +1,46 @@
 package com.kartik.EcommerProject.service;
 
+import com.kartik.EcommerProject.exception.ResourceNotFoundException;
 import com.kartik.EcommerProject.model.Product;
 import com.kartik.EcommerProject.repo.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-
-    public List<Product> getAllProducts() {
-        return   productRepository.findAll();
+    public Page<Product> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
-    @Cacheable(value="product",key="#id")
     public Product getProductById(Long id) {
-       return productRepository.findById(id).orElseThrow(null);
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
     }
 
-    @CachePut(value = "product",key = "#result.id")
     public Product addProduct(Product product) {
-       return productRepository.save(product);
+        return productRepository.save(product);
     }
 
-    @CacheEvict(value = "product",key = "#id")
+    public Product updateProduct(Long id, Product updatedProduct) {
+        Product product = getProductById(id);
+        product.setName(updatedProduct.getName());
+        product.setDescription(updatedProduct.getDescription());
+        product.setPrice(updatedProduct.getPrice());
+        product.setImageUrl(updatedProduct.getImageUrl());
+        product.setCategory(updatedProduct.getCategory());
+        return productRepository.save(product);
+    }
+
     public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product", "id", id);
+        }
         productRepository.deleteById(id);
     }
 }
-

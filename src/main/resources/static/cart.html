@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart — Mart</title>
+    <meta name="description" content="Review your items and checkout securely at Mart.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,6 +16,9 @@
         }
         body { background: var(--surface); font-family: 'Inter', sans-serif; color: var(--ink); }
         h1,h2,h3 { font-family: 'Playfair Display', serif; }
+        .skip-link { position: absolute; left: -9999px; top: 0; background: var(--ink); color: #fff; padding: 0.6rem 1.2rem; z-index: 10000; border-radius: 0 0 8px 0; }
+        .skip-link:focus { left: 0; }
+        a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
         .navbar { background: var(--card-bg) !important; border-bottom: 1px solid var(--border); }
         .navbar-brand { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--ink) !important; }
         .nav-link { font-size: 0.9rem; font-weight: 500; color: var(--muted) !important; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -38,6 +43,7 @@
         .btn-checkout { background: var(--ink); color: #fff; border: none; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; width: 100%; margin-top: 1rem; transition: background 0.2s; }
         .btn-checkout:hover { background: var(--accent); color: #fff; }
         .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-checkout.loading { background: var(--muted); cursor: wait; }
         .empty-cart { text-align: center; padding: 5rem 1rem; color: var(--muted); }
         .empty-cart i { font-size: 3.5rem; opacity: 0.25; display: block; margin-bottom: 1rem; }
         .empty-cart h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
@@ -46,22 +52,24 @@
         #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
         .toast-msg { background: var(--ink); color: #fff; padding: 0.7rem 1.2rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: slideUp 0.3s ease, fadeOut 0.4s 2.2s forwards; }
         .toast-msg i { color: #2d9e6b; margin-right: 8px; }
+        .toast-msg.error i { color: var(--accent); }
         @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         @keyframes fadeOut { to { opacity:0; transform:translateY(-8px); } }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg sticky-top">
+<a class="skip-link" href="#main">Skip to main content</a>
+<nav class="navbar navbar-expand-lg sticky-top" aria-label="Main navigation">
     <div class="container">
         <a class="navbar-brand" href="index.html">Mart</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto align-items-center">
                 <li class="nav-item"><a class="nav-link" href="index.html">Shop</a></li>
                 <li class="nav-item ms-2">
-                    <a class="nav-link" href="cart.html">
+                    <a class="nav-link" href="cart.html" aria-label="View cart">
                         <span class="cart-icon-wrap">
-                            <i class="fa-solid fa-cart-shopping fa-lg"></i>
-                            <span class="cart-badge" id="cart-count">0</span>
+                            <i class="fa-solid fa-cart-shopping fa-lg" aria-hidden="true"></i>
+                            <span class="cart-badge" id="cart-count" aria-live="polite">0</span>
                         </span>
                     </a>
                 </li>
@@ -70,32 +78,65 @@
     </div>
 </nav>
 
+<main id="main">
 <div class="container mt-5 pb-5">
-    <h2 class="mb-4">Your Cart</h2>
+    <h1 class="mb-4" style="font-size:1.8rem;">Your Cart</h1>
+
     <div class="row g-4">
-        <div class="col-lg-8" id="cart-items"></div>
+        <div class="col-lg-8">
+            <div id="cart-items"></div>
+            <div id="login-prompt" class="alert alert-secondary d-none" role="alert">
+                To place an order you need an account.
+                <a href="#" id="show-login" class="alert-link">Login here</a> or use the default demo account below.
+            </div>
+            <form id="login-form" class="d-none mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3">Login to place your order</h2>
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label for="login-email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="login-email" placeholder="you@example.com" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="login-password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="login-password" placeholder="password" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-dark w-100">Login</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
         <div class="col-lg-4">
             <div class="summary-card">
-                <h3>Order Summary</h3>
+                <h2 style="font-size:1.3rem;">Order Summary</h2>
                 <div class="summary-row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
                 <div class="summary-row"><span>Delivery</span><span>FREE</span></div>
                 <div class="summary-total"><span>Total</span><span id="total">₹0</span></div>
-                <button class="btn-checkout" id="checkout-btn" disabled onclick="checkout()">
-                    <i class="fa-solid fa-lock me-2"></i>Proceed to Checkout
+                <button class="btn-checkout" id="checkout-btn" disabled>
+                    <i class="fa-solid fa-lock me-2" aria-hidden="true"></i>Proceed to Checkout
                 </button>
                 <a href="index.html" class="btn-shop d-block text-center mt-3" style="background:transparent;color:var(--muted);border:1px solid var(--border);">
-                    <i class="fa-solid fa-arrow-left me-1"></i> Continue Shopping
+                    <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i> Continue Shopping
                 </a>
             </div>
         </div>
     </div>
 </div>
+</main>
 
-<div id="toast-container"></div>
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    const API_BASE = 'http://localhost:9090/api/v1';
+
     function getCart() { return JSON.parse(localStorage.getItem("cart")) || []; }
     function saveCart(cart) { localStorage.setItem("cart", JSON.stringify(cart)); }
+    function getToken() { return localStorage.getItem("token"); }
+    function getUserId() { return localStorage.getItem("userId"); }
 
     function renderCart() {
         const cart = getCart();
@@ -103,7 +144,7 @@
         const checkoutBtn = document.getElementById("checkout-btn");
         if (cart.length === 0) {
             container.innerHTML = `<div class="empty-cart">
-                <i class="fa-solid fa-cart-shopping"></i>
+                <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
                 <h3>Your cart is empty</h3>
                 <p>Looks like you haven't added anything yet.</p>
                 <a href="index.html" class="btn-shop">Start Shopping</a>
@@ -115,18 +156,18 @@
         checkoutBtn.disabled = false;
         container.innerHTML = cart.map(item => `
             <div class="cart-item" data-id="${item.id}">
-                <img src="${item.imageUrl}" alt="${item.name}">
+                <img src="${escHtml(item.imageUrl)}" alt="${escHtml(item.name)}" width="90" height="90">
                 <div class="flex-grow-1">
-                    <div class="item-name">${item.name}</div>
+                    <div class="item-name">${escHtml(item.name)}</div>
                     <div class="item-price">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
                     <div class="qty-control mt-2">
-                        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
-                        <span class="qty-val">${item.quantity}</span>
-                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, -1)" aria-label="Decrease quantity for ${escHtml(item.name)}">−</button>
+                        <span class="qty-val" aria-live="polite">${item.quantity}</span>
+                        <button class="qty-btn" onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity for ${escHtml(item.name)}">+</button>
                     </div>
                 </div>
-                <button class="remove-btn" onclick="removeItem(${item.id})" title="Remove">
-                    <i class="fa-solid fa-xmark"></i>
+                <button class="remove-btn" onclick="removeItem(${item.id})" aria-label="Remove ${escHtml(item.name)} from cart">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
                 </button>
             </div>
         `).join('');
@@ -163,18 +204,102 @@
         showToast("Item removed from cart");
     }
 
-    function checkout() {
-        showToast("Order placed! Thank you 🎉");
-        localStorage.removeItem("cart");
-        setTimeout(() => { window.location.href = "index.html"; }, 2500);
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    function showToast(msg) {
+    // ── Checkout — calls the real backend ─────────────────────
+    document.getElementById("checkout-btn").addEventListener("click", checkout);
+
+    async function checkout() {
+        const cart = getCart();
+        if (cart.length === 0) return;
+
+        const token = getToken();
+        const userId = getUserId();
+
+        if (!userId) {
+            showToast("Please login to place your order", true);
+            document.getElementById("login-prompt").classList.remove("d-none");
+            document.getElementById("login-form").classList.remove("d-none");
+            return;
+        }
+
+        const productQuantities = {};
+        cart.forEach(item => { productQuantities[item.id] = item.quantity; });
+        const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+
+        const checkoutBtn = document.getElementById("checkout-btn");
+        checkoutBtn.disabled = true;
+        checkoutBtn.classList.add("loading");
+        checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2" aria-hidden="true"></i>Placing order...';
+
+        try {
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
+            const response = await fetch(`${API_BASE}/orders/place/${userId}`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ productQuantities, totalAmount })
+            });
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => null);
+                throw new Error(err?.message || `Server responded with ${response.status}`);
+            }
+
+            const order = await response.json();
+            localStorage.removeItem("cart");
+            renderCart();
+            showToast(`Order #${order.id} placed successfully!`);
+            setTimeout(() => { window.location.href = "index.html"; }, 2500);
+        } catch (err) {
+            showToast("Failed to place order: " + err.message, true);
+            checkoutBtn.disabled = false;
+            checkoutBtn.classList.remove("loading");
+            checkoutBtn.innerHTML = '<i class="fa-solid fa-lock me-2" aria-hidden="true"></i>Proceed to Checkout';
+        }
+    }
+
+    // ── Login ──────────────────────────────────────────────────
+    document.getElementById("show-login").addEventListener("click", e => {
+        e.preventDefault();
+        document.getElementById("login-form").classList.toggle("d-none");
+    });
+
+    document.getElementById("login-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value;
+
+        try {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            if (!response.ok) throw new Error("Invalid credentials");
+            const data = await response.json();
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("userId", data.email);
+            localStorage.setItem("userName", data.name);
+            document.getElementById("login-form").classList.add("d-none");
+            document.getElementById("login-prompt").classList.add("d-none");
+            showToast(`Welcome back, ${data.name}!`);
+            checkout();
+        } catch (err) {
+            showToast("Login failed: " + err.message, true);
+        }
+    });
+
+    function showToast(msg, isError = false) {
         const el = document.createElement('div');
-        el.className = 'toast-msg';
-        el.innerHTML = `<i class="fa-solid fa-check-circle"></i>${msg}`;
+        el.className = `toast-msg${isError ? ' error' : ''}`;
+        const icon = isError ? `fa-triangle-exclamation` : `fa-check-circle`;
+        el.innerHTML = `<i class="fa-solid ${icon}" aria-hidden="true"></i>${escHtml(msg)}`;
         document.getElementById('toast-container').appendChild(el);
-        setTimeout(() => el.remove(), 2700);
+        setTimeout(() => el.remove(), 3500);
     }
 
     renderCart();

@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ecommerce-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ecommerce
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: ecommerce-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/ecommerce
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-rootpass}
+      JPA_DDL_AUTO: update
+      JWT_SECRET: ${JWT_SECRET:-eGZlbGl4LW1hcnQtc2VjcmV0LWtleS1mb3Itand0LXNpZ25pbmctb25seS0yMDI1}
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "9090:9090"
+
+volumes:
+  mysql-data:

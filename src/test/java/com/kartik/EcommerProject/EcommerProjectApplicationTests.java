@@ -9,5 +9,4 @@ class EcommerProjectApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

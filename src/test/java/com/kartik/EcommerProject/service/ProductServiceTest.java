@@ -1,76 +1,99 @@
 package com.kartik.EcommerProject.service;
 
+import com.kartik.EcommerProject.exception.ResourceNotFoundException;
 import com.kartik.EcommerProject.model.Product;
 import com.kartik.EcommerProject.repo.ProductRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import static org.mockito.Mockito.doNothing;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductServiceTest {
+class ProductServiceTest {
 
     @Mock
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
 
     @InjectMocks
-    ProductService productService;
+    private ProductService productService;
 
-    @BeforeAll
-    public static  void init(){
-        System.out.println("before all");
-    }
+    @Test
+    void addProduct_shouldSaveAndReturnProduct() {
+        Product product = Product.builder()
+                .name("T-Shirt")
+                .description("Cotton t-shirt")
+                .price(new BigDecimal("499.00"))
+                .imageUrl("http://localhost/img.jpg")
+                .category("Clothing")
+                .build();
 
-    @BeforeEach
-    public void initEachTest(){
-        System.out.println("beforeEach");
+        when(productRepository.save(any(Product.class))).thenReturn(product);
+
+        Product result = productService.addProduct(product);
+
+        assertNotNull(result);
+        assertEquals("T-Shirt", result.getName());
+        assertEquals(new BigDecimal("499.00"), result.getPrice());
     }
 
     @Test
-    void addProduct(){
+    void getProductById_shouldReturnProduct() {
+        Product product = Product.builder().id(1L).name("Shoes").build();
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
 
-        Product p = new Product();
-        p.setId(1L);
-        p.setName("kartik");
-        p.setDescription("best");
-        p.setPrice(9000.00);
-        p.setImageUrl("http:localhost//img.jpg");
-        p.setCategory("game");
-        Mockito.when(productRepository.save(p)).thenReturn(p);
-        Product product = productService.addProduct(p);
-        System.out.println("my first unit test");
+        Product result = productService.getProductById(1L);
 
-        Assertions.assertNotNull(product);
-        Assertions.assertEquals(p.getId(),product.getId());
-        Assertions.assertEquals(p.getName(),product.getName());
+        assertNotNull(result);
+        assertEquals("Shoes", result.getName());
     }
 
     @Test
-    public void dummyTest(){
-        System.out.println("dummytest");
-    }
+    void getProductById_shouldThrowResourceNotFound_whenNotExists() {
+        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-    @AfterAll
-    public static void Destroy(){
-        System.out.println("after all");
-    }
-
-    @AfterEach
-    public void cleanup(){
-        System.out.println("AfterEach");
+        assertThrows(ResourceNotFoundException.class, () -> productService.getProductById(99L));
     }
 
     @Test
-    public void deleteProduct(){
+    void deleteProduct_shouldDeleteWhenExists() {
+        when(productRepository.existsById(1L)).thenReturn(true);
         doNothing().when(productRepository).deleteById(1L);
-         productService.deleteProduct(1L);
-         Mockito.verify(productRepository,Mockito.times(1)).deleteById(1L);
+
+        productService.deleteProduct(1L);
+
+        verify(productRepository, times(1)).deleteById(1L);
     }
 
+    @Test
+    void deleteProduct_shouldThrowResourceNotFound_whenNotExists() {
+        when(productRepository.existsById(anyLong())).thenReturn(false);
 
+        assertThrows(ResourceNotFoundException.class, () -> productService.deleteProduct(99L));
+    }
 
+    @Test
+    void getAllProducts_shouldReturnPage() {
+        Product product = Product.builder().id(1L).name("Book").build();
+        Page<Product> page = new PageImpl<>(List.of(product));
+
+        when(productRepository.findAll(any(PageRequest.class))).thenReturn(page);
+
+        Page<Product> result = productService.getAllProducts(PageRequest.of(0, 10));
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Book", result.getContent().get(0).getName());
+    }
 }

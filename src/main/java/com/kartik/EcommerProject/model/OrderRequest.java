@@ -1,25 +1,22 @@
 package com.kartik.EcommerProject.model;
 
+import jakarta.validation.constraints.*;
+import lombok.*;
+
+import java.math.BigDecimal;
 import java.util.Map;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderRequest {
-      private Map<Long,Integer>productQuantities;
 
-      private  double totalAmount;
+    @NotEmpty(message = "Product quantities cannot be empty")
+    private Map<Long, Integer> productQuantities;
 
-    public Map<Long, Integer> getProductQuantities() {
-        return productQuantities;
-    }
-
-    public void setProductQuantities(Map<Long, Integer> productQuantities) {
-        this.productQuantities = productQuantities;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.01", message = "Total amount must be positive")
+    private BigDecimal totalAmount;
 }
