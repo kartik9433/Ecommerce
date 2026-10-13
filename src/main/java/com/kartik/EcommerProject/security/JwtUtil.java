@@ -72,3 +72,13 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
+
+//payload
+//{
+//  "sub": "kartik@gmail.com",
+//  "userId": 101,
+//  "name": "Kartik Singh",
+//  "roles": ["USER"],
+//  "iat": 1727500000,
+//  "exp": 1727586400
+//}

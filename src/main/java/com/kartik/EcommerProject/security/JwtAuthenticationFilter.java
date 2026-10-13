@@ -50,3 +50,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
+//Read JWT →
+// extract user → validate JWT →
+// create Authentication →
+// store it in SecurityContextHolder →
+// continue request.
+
+//Authorization: Bearer <JWT>
+
+//{
+//  "sub": "kartik@gmail.com",
+//  "userId": 101,
+//  "name": "Kartik Singh",
+//  "roles": ["USER"],
+//  "iat": 1727500000,
+//  "exp": 1727586400
+//}
