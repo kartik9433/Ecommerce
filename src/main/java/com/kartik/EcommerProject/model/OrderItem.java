@@ -26,3 +26,4 @@ public class OrderItem {
     @Column(nullable = false)
     private int quantity;
 }
+
