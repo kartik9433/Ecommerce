@@ -44,7 +44,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: docker-compose.prod.yml
+          source: docker-compose.yml
           target: ~/mart
 
       - name: Deploy to EC2
@@ -55,6 +55,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/mart
-            docker compose -f docker-compose.prod.yml pull app
-            docker compose -f docker-compose.prod.yml up -d
+            docker compose -f docker-compose.yml pull app
+            docker compose -f docker-compose.yml up -d
             docker image prune -f
