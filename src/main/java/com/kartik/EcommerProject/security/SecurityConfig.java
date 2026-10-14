@@ -24,6 +24,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     private static final String[] PUBLIC_URLS = {
+            "/",
             "/api/v1/auth/**",
             "/api/v1/products",
             "/api/v1/products/**",
